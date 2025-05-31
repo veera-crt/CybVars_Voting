@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Manager | CybVars Voting System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <style>
+    body { background: #eaf6ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; }
+    .container { max-width: 1100px; margin: 3rem auto; background: #fff; border-radius: 18px; box-shadow: 0 6px 32px rgba(36,123,160,0.16); padding: 2.6rem 1.6rem 2.2rem 1.6rem; }
+    h2 { text-align: center; color: #186faf; margin-bottom: 2.2rem; letter-spacing: 1.5px;}
+    .user-table { width: 100%; border-collapse: collapse; }
+    .user-table th, .user-table td { padding: 1.1rem 0.5rem; }
+    .user-table th { background: #eaf4fb; color: #186faf; font-size: 1.06rem; border-bottom: 2px solid #c9e7f7; }
+    .user-table td { border-bottom: 1px solid #f2f2f2; font-size: 1.04rem; }
+    .user-table tr:hover { background: #f5fbff; }
+    .btn { padding: 0.44rem 1.05rem; border: none; border-radius: 7px; font-weight: bold; cursor: pointer; font-size: 0.97rem; }
+    .btn-approve { background: #12bb5a; color: #fff; }
+    .btn-approve:hover { background: #0e9346; }
+    .btn-reject { background: #f65050; color: #fff; margin-left: 0.6rem; }
+    .btn-reject:hover { background: #d63636; }
+    .btn-view { background: #247ba0; color: #fff; margin-right: 0.6rem;}
+    .btn-view:hover { background: #186faf; }
+    .back-btn { background: #247ba0; color: #fff; border: none; border-radius: 7px; font-size: 1.1rem; font-weight: bold; padding: 0.5rem 1.2rem; cursor: pointer; margin-bottom: 1.7rem;}
+    .back-btn:hover { background: #70c1b3; }
+    .msg-toast {
+      position: fixed;
+      top: 35px; left: 50%; transform: translateX(-50%);
+      padding: 1rem 2.2rem; border-radius: 30px;
+      font-size: 1.07rem; font-weight: bold; z-index: 99;
+      background: #fff; color: #247ba0; box-shadow: 0 6px 22px rgba(36,123,160,0.15); display: none;
+    }
+    .msg-toast.success { background: #2ecc71; color: #fff; }
+    .msg-toast.error { background: #f65050; color: #fff; }
+    /* Popup modal */
+    .modal-bg {
+      position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(35,85,135,0.19);
+      z-index: 20; display: flex; align-items: center; justify-content: center; display: none;
+    }
+    .modal-card {
+      background: #fff; border-radius: 16px; box-shadow: 0 8px 38px rgba(36,123,160,0.13);
+      padding: 2.2rem 2.2rem 1.7rem 2.2rem; max-width: 410px; width: 92vw;
+      animation: popup-in 0.22s;
+    }
+    .modal-header { font-size: 1.2rem; color: #247ba0; margin-bottom: 0.8rem; }
+    .modal-row { margin-bottom: 0.7rem; color: #25303b;}
+    .modal-row strong { color: #247ba0; min-width: 90px; display: inline-block; }
+    .modal-actions { text-align: center; margin-top: 1.6rem;}
+    @keyframes popup-in {
+      from { opacity: 0; transform: scale(0.89);}
+      to { opacity: 1; transform: scale(1);}
+    }
+    @media (max-width: 700px) {
+      .container { padding: 0.6rem 0.3rem; }
+      .user-table th, .user-table td { padding: 0.55rem 0.2rem; font-size: 0.91rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="msg-toast" id="toastMsg"></div>
+  <div class="container">
+    <button class="back-btn" onclick="window.location.href='admin-dashboard.html'"><i class="fas fa-arrow-left"></i> Home</button>
+    <h2>Pending User Approvals</h2>
+    <table class="user-table" id="userTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Voter ID</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="userTableBody">
+        <tr><td colspan="5" style="text-align:center; color:#888;">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- Popup Modal -->
+  <div class="modal-bg" id="modalBg">
+    <div class="modal-card" id="modalCard">
+      <div class="modal-header"><i class="fas fa-user"></i> User Details</div>
+      <div class="modal-row"><strong>Name:</strong> <span id="modalName"></span></div>
+      <div class="modal-row"><strong>Email:</strong> <span id="modalEmail"></span></div>
+      <div class="modal-row"><strong>Phone:</strong> <span id="modalPhone"></span></div>
+      <div class="modal-row"><strong>DOB:</strong> <span id="modalDob"></span></div>
+      <div class="modal-row"><strong>Gender:</strong> <span id="modalGender"></span></div>
+      <div class="modal-row"><strong>Voter ID:</strong> <span id="modalVoterId"></span></div>
+      <div class="modal-row"><strong>Address:</strong> <span id="modalAddress"></span></div>
+      <div class="modal-actions">
+        <button class="btn btn-approve" id="modalApproveBtn"><i class="fas fa-check"></i> Approve</button>
+        <button class="btn btn-reject" id="modalRejectBtn"><i class="fas fa-times"></i> Reject</button>
+        <button class="btn btn-view" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    let users = [];
+    let currentUser = null;
+
+    function showToast(message, type="success") {
+      const toast = document.getElementById("toastMsg");
+      toast.textContent = message;
+      toast.className = "msg-toast " + type;
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 2200);
+    }
+
+    function showModal(user) {
+      currentUser = user;
+      document.getElementById('modalName').textContent = user.full_name;
+      document.getElementById('modalEmail').textContent = user.email;
+      document.getElementById('modalPhone').textContent = user.phone;
+      document.getElementById('modalDob').textContent = user.dob;
+      document.getElementById('modalGender').textContent = user.gender;
+      document.getElementById('modalVoterId').textContent = user.voter_id;
+      document.getElementById('modalAddress').textContent = user.address;
+      document.getElementById('modalBg').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modalBg').style.display = 'none';
+      currentUser = null;
+    }
+
+    document.getElementById('modalBg').onclick = function(e) {
+      if (e.target === this) closeModal();
+    };
+
+    document.getElementById('modalApproveBtn').onclick = async function() {
+      if (!currentUser) return;
+      let btn = this;
+      btn.disabled = true;
+      let res = await fetch('https://cybvars-votings-backend.onrender.com/api/manager/approve-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: currentUser.id })
+      });
+      let data = await res.json();
+      if(data.success) {
+        showToast(data.message, "success");
+        closeModal();
+        loadUsers();
+      } else {
+        showToast(data.message || "Error.", "error");
+      }
+      btn.disabled = false;
+    };
+
+    document.getElementById('modalRejectBtn').onclick = async function() {
+      if (!currentUser) return;
+      if (!confirm('Are you sure to reject this user?')) return;
+      let btn = this;
+      btn.disabled = true;
+      let res = await fetch('https://cybvars-votings-backend.onrender.com/api/manager/reject-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: currentUser.id })
+      });
+      let data = await res.json();
+      if(data.success) {
+        showToast(data.message, "success");
+        closeModal();
+        loadUsers();
+      } else {
+        showToast(data.message || "Error.", "error");
+      }
+      btn.disabled = false;
+    };
+
+    async function loadUsers() {
+      const res = await fetch('https://cybvars-votings-backend.onrender.com/api/manager/pending-users');
+      const data = await res.json();
+      users = (data.success && data.users) ? data.users : [];
+      const body = document.getElementById('userTableBody');
+      body.innerHTML = "";
+      if(users.length > 0) {
+        users.forEach(user => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${user.full_name}</td>
+            <td>${user.email}</td>
+            <td>${user.phone}</td>
+            <td>${user.voter_id}</td>
+            <td>
+              <button class="btn btn-view" onclick="showModal(users[${users.indexOf(user)}])"><i class="fas fa-eye"></i> View</button>
+            </td>
+          `;
+          body.appendChild(row);
+        });
+      } else {
+        body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#888;">No pending users to approve.</td></tr>`;
+      }
+    }
+
+    // Load on page ready
+    window.onload = loadUsers;
+  </script>
+</body>
+</html>

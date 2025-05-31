@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>User Dashboard | CybVars Voting</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #247ba0;
+      --accent: #70c1b3;
+      --yellow: #ffb400;
+      --green: #2ecc71;
+      --orange: #e67e22;
+      --danger: #e84118;
+      --shadow: 0 6px 24px rgba(36,123,160,0.10);
+      --bg: #eef6f3;
+      --card-bg: #fff;
+      --profile-width: 320px;
+    }
+    body {
+      background: var(--bg);
+      color: #25303b;
+      font-family: 'Segoe UI', 'Roboto', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; min-height: 100vh;
+      display: flex; flex-direction: column;
+      transition: background 0.25s;
+    }
+    header {
+      background: var(--primary);
+      box-shadow: var(--shadow);
+      z-index: 20;
+    }
+    .header-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2vw;
+    }
+    .logo {
+      display: flex; align-items: center;
+      gap: 0.7rem;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.55rem;
+      letter-spacing: 1.5px;
+      text-decoration: none;
+    }
+    .logo i { color: var(--accent); font-size: 2rem; }
+    nav ul { list-style: none; display: flex; gap: 1rem; margin: 0; padding: 0;}
+    nav li { display: inline-block;}
+    nav button, nav .btn {
+      background: none; border: none; color: #d2f1ed;
+      font-size: 1rem; font-weight: bold;
+      padding: 0.5rem 1.1rem; border-radius: 7px; cursor: pointer;
+      transition: background 0.16s, color 0.16s;
+      outline: none;
+    }
+    nav button.active, nav button:hover { background: #1b5d75; color: #fff;}
+    .btn-logout { background: var(--yellow); color: #25303b; margin-left: 0.5rem; }
+    .btn-logout:hover { background: #ffd166; color: #1b5d75; }
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      max-width: 1200px;
+      margin: 2rem auto 1.5rem auto;
+      gap: 2.5rem;
+      width: 100%;
+      position: relative;
+      padding: 0 1vw;
+    }
+    /* SIDEBAR PROFILE (SLIDE) */
+    .profile-slide {
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      width: var(--profile-width);
+      background: var(--card-bg);
+      box-shadow: 2px 0 30px rgba(36,123,160,0.14);
+      z-index: 99;
+      padding: 2.2rem 1.2rem 1.2rem 2.2rem;
+      border-top-right-radius: 18px;
+      border-bottom-right-radius: 18px;
+      display: flex; flex-direction: column; align-items: flex-start;
+      transform: translateX(-105%);
+      transition: transform 0.38s cubic-bezier(.62, .05, .39, .95);
+    }
+    .profile-slide.show { transform: translateX(0); }
+    .profile-close {
+      position: absolute;
+      top: 20px; right: 18px;
+      background: none; border: none; font-size: 1.6rem;
+      color: var(--primary); cursor: pointer;
+    }
+    .profile-card h2 { color: var(--primary); font-size: 1.22rem; margin-bottom: 0.55rem;}
+    .profile-info { font-size: 1.05rem; }
+    .profile-info p { margin: 0.29rem 0; }
+    .profile-logout { margin-top: 2.5rem; }
+    .btn-logout { padding: 0.57rem 1.3rem; }
+    /* DASHBOARD CENTER AREA */
+    .center-area {
+      flex: 1 1 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.7rem;
+      width: 100%;
+      max-width: 670px;
+    }
+    .election-card {
+      width: 100%; max-width: 550px;
+      background: var(--card-bg);
+      border-radius: 17px;
+      box-shadow: var(--shadow);
+      padding: 2.2rem 2rem 1.2rem 2rem;
+      margin: 0 auto;
+      border-left: 6px solid var(--primary);
+      position: relative;
+      animation: fadeIn 0.7s;
+      transition: box-shadow 0.19s;
+    }
+    .election-card.locked { opacity: 0.55; }
+    .election-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.3rem;
+    }
+    .election-title { color: var(--primary); font-size: 1.25rem; font-weight: bold; }
+    .election-status {
+      font-size: 1rem; font-weight: bold;
+      border-radius: 8px; padding: 0.2rem 0.89rem;
+      background: #f2f2f2; color: var(--primary);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .election-status.active { background: #d8fbe2; color: var(--green);}
+    .election-status.locked { background: #ffe3c2; color: var(--orange);}
+    .election-status.ended { background: #fbe2e6; color: var(--danger);}
+    .election-desc { color: #25303b; font-size: 1.06rem; margin-bottom: 0.7rem;}
+    .voting-time {
+      color: #888; font-size: 1.01rem; margin: 0.65rem 0 0.05rem 0; letter-spacing: 1px;
+    }
+    /* Candidates */
+    .candidates-list {
+      display: flex; flex-wrap: wrap; gap: 1.13rem; margin: 1.25rem 0 0.7rem 0;
+      justify-content: center;
+    }
+    .candidate-btn {
+      background: var(--accent);
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 1.5rem;
+      padding: 0.68rem 1.4rem;
+      font-size: 1.05rem;
+      cursor: pointer;
+      box-shadow: 0 1px 7px #b0f1e633;
+      margin-bottom: 0.15rem;
+      margin-top: 0.15rem;
+      transition: background 0.17s, color 0.17s, transform 0.12s;
+      position: relative;
+    }
+    .candidate-btn:hover, .candidate-btn.selected {
+      background: var(--primary); color: #fff; transform: scale(1.06);
+    }
+    .candidate-btn[disabled] {
+      background: #c6ebe6;
+      color: #92b5b2;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .voted-label {
+      background: var(--green);
+      color: #fff;
+      padding: 0.18rem 0.86rem;
+      border-radius: 9px;
+      font-size: 1rem;
+      font-weight: bold;
+      margin-left: 0.82rem;
+      box-shadow: 0 1px 3px #e0f7e7;
+      display: inline-block;
+    }
+    .vote-count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    /* Charts */
+    .charts-wrap { display: flex; gap: 2.2rem; margin-top: 1.6rem; flex-wrap: wrap; justify-content: center;}
+    .chart-box {
+      background: #f7fafc;
+      border-radius: 13px;
+      padding: 1.4rem 1.1rem;
+      min-width: 150px;
+      box-shadow: 0 1px 7px #c1edec29;
+      display: flex; align-items: center; justify-content: center;
+    }
+    /* Animation */
+    @keyframes fadeIn { from { opacity:0; transform:translateY(24px);} to {opacity:1; transform:translateY(0);} }
+    @media (max-width: 1100px) {
+      main { flex-direction: column; align-items: stretch; }
+      .center-area { max-width: 98vw; }
+      .profile-slide { display: none !important; }
+    }
+    @media (max-width: 700px) {
+      .center-area { gap: 1.1rem;}
+      .election-card { padding: 1.2rem 0.4rem;}
+      .charts-wrap { flex-direction: column; gap: 1rem;}
+      .chart-box { min-width: 90px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="user-dashboard.html" class="logo">
+        <i class="fas fa-vote-yea"></i>
+        <span>CybVars Voting</span>
+      </a>
+      <nav>
+        <ul>
+          <li><button class="btn-profile" onclick="toggleProfile()">Profile</button></li>
+          <li><button class="btn-logout" onclick="logout()">Logout</button></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <!-- Profile sidebar (slide) -->
+    <div class="profile-slide" id="profile-card">
+      <button class="profile-close" onclick="toggleProfile()"><i class="fas fa-times"></i></button>
+      <div class="profile-card" style="box-shadow:none;padding:0;">
+        <h2 id="profile-name">Loading...</h2>
+        <div class="profile-info" id="profile-info"></div>
+        <div class="profile-logout">
+          <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+      </div>
+    </div>
+    <section class="center-area" id="elections-area">
+      <div class="election-card">
+        <div class="election-header">
+          <div class="election-title">Loading Elections...</div>
+          <div class="election-status inactive"><i class="fas fa-circle"></i> Loading</div>
+        </div>
+        <div class="election-desc">Please wait while we load the election data</div>
+      </div>
+    </section>
+  </main>
+  <footer style="background: #1b5d75; color: #f7fff7; text-align:center; padding:1rem 0; letter-spacing:1px;">
+    &copy; 2025 CybVars Voting Platform. All Rights Reserved.
+  </footer>
+  <script>
+    let user = null;
+    let voter_id = "";
+    let profileVisible = false;
+
+    // Profile toggle (slide in/out)
+    function toggleProfile() {
+      profileVisible = !profileVisible;
+      document.getElementById("profile-card").classList.toggle("show", profileVisible);
+    }
+
+    // Logout function
+    async function logout() {
+      try {
+        const response = await fetch('https://cybvars-votings-backend.onrender.com/api/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        window.location.href = "index.html";
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = "index.html";
+      }
+    }
+
+    // Fetch user profile
+    async function fetchProfile() {
+      try {
+        const response = await fetch("https://cybvars-votings-backend.onrender.com/api/profile", {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          user = data;
+          voter_id = user.voter_id;
+          document.getElementById('profile-name').textContent = user.full_name;
+          document.getElementById('profile-info').innerHTML = `
+            <p><b>Email:</b> ${user.email}</p>
+            <p><b>Voter ID:</b> ${user.voter_id}</p>
+            <p><b>Address:</b> ${user.address}</p>
+            <p><b>Phone:</b> ${user.phone}</p>
+          `;
+        } else {
+          throw new Error(data.message || 'Profile fetch failed');
+        }
+      } catch (error) {
+        console.error('Profile error:', error);
+        document.getElementById('profile-name').textContent = 'Error loading profile';
+        document.getElementById('profile-info').innerHTML = `
+          <p style="color: var(--danger)">${error.message}</p>
+        `;
+      }
+    }
+
+    // Fetch and render elections
+    async function fetchAndRenderElections() {
+      try {
+        const response = await fetch("https://cybvars-votings-backend.onrender.com/api/user/elections", {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch elections');
+        }
+        
+        const data = await response.json();
+        const area = document.getElementById('elections-area');
+        
+        if (!data.success || !data.elections || data.elections.length === 0) {
+          area.innerHTML = `
+            <div class="election-card">
+              <div class="election-header">
+                <div class="election-title">No Elections Available</div>
+              </div>
+              <div class="election-desc">There are currently no active elections. Please check back later.</div>
+            </div>
+          `;
+          return;
+        }
+        
+        area.innerHTML = "";
+        data.elections.forEach(election => {
+          renderElectionCard(area, election);
+        });
+      } catch (error) {
+        console.error('Elections error:', error);
+        const area = document.getElementById('elections-area');
+        area.innerHTML = `
+          <div class="election-card">
+            <div class="election-header">
+              <div class="election-title">Error Loading Elections</div>
+              <div class="election-status ended"><i class="fas fa-circle"></i> Error</div>
+            </div>
+            <div class="election-desc">${error.message || 'Failed to load election data'}</div>
+          </div>
+        `;
+      }
+    }
+
+    // Render one election card
+    function renderElectionCard(area, election) {
+      const now = new Date();
+      const start = new Date(election.start_time);
+      const end = new Date(election.end_time);
+
+      let status = "";
+      let statusClass = "";
+      if (election.is_locked) {
+        status = "Locked";
+        statusClass = "locked";
+      } else if (now < start) {
+        status = "Not started";
+        statusClass = "inactive";
+      } else if (now > end) {
+        status = "Ended";
+        statusClass = "ended";
+      } else if (election.is_active) {
+        status = "Active";
+        statusClass = "active";
+      } else {
+        status = "Inactive";
+        statusClass = "inactive";
+      }
+
+      // Calculate votes per candidate and total
+      let totalVotes = election.candidates.reduce((sum, c) => sum + c.votes, 0) || 1;
+      let chartData = {
+        labels: election.candidates.map(c => c.name),
+        data: election.candidates.map(c => Math.round((c.votes/totalVotes)*100))
+      };
+
+      let votedFor = election.user_voted_for;
+      let hasVoted = votedFor !== null && votedFor !== undefined;
+
+      // Card element
+      let card = document.createElement('div');
+      card.className = 'election-card' + (election.is_locked ? ' locked' : '');
+      card.innerHTML = `
+        <div class="election-header">
+          <div class="election-title">${election.title}</div>
+          <div class="election-status ${statusClass}"><i class="fas fa-circle"></i> ${status}</div>
+        </div>
+        <div class="election-desc">${election.description}</div>
+        <div class="voting-time"><b>Start:</b> ${formatDate(election.start_time)} &nbsp; <b>End:</b> ${formatDate(election.end_time)}</div>
+        <div class="candidates-list" id="cand-list-${election.id}">
+          ${election.candidates.map(c =>
+            `<button class="candidate-btn${votedFor===c.id?' selected':''}"
+              ${!election.is_active||election.is_locked||now<start||now>end||hasVoted?'disabled':''}
+              onclick="voteFor(${election.id},${c.id},'${c.name.replace(/'/g, "\\'")}')">
+              ${c.name}
+              ${c.votes > 0 ? `<span class="vote-count">${c.votes}</span>` : ''}
+              ${votedFor===c.id?'<span class="voted-label">Voted</span>':''}
+            </button>`
+          ).join('')}
+        </div>
+        <div class="charts-wrap">
+          <div class="chart-box"><canvas id="bar-${election.id}" width="220" height="130"></canvas></div>
+          <div class="chart-box"><canvas id="donut-${election.id}" width="120" height="120"></canvas></div>
+        </div>
+      `;
+      area.appendChild(card);
+
+      // Render charts after DOM insert
+      setTimeout(() => {
+        renderBarChart(`bar-${election.id}`, chartData);
+        renderDonutChart(`donut-${election.id}`, chartData);
+      }, 0);
+    }
+
+    // Format date for display
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    }
+
+    // Chart rendering functions
+    function renderBarChart(id, chartData) {
+      try {
+        new Chart(document.getElementById(id).getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: chartData.labels,
+            datasets: [{
+              label: '% Votes',
+              data: chartData.data,
+              backgroundColor: ['#247ba0', '#70c1b3', '#ffb400', '#2ecc71', '#e67e22', '#e84118']
+            }]
+          },
+          options: {
+            responsive: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, max: 100 } }
+          }
+        });
+      } catch (error) {
+        console.error('Chart error:', error);
+      }
+    }
+
+    function renderDonutChart(id, chartData) {
+      try {
+        new Chart(document.getElementById(id).getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: chartData.labels,
+            datasets: [{
+              data: chartData.data,
+              backgroundColor: ['#247ba0', '#70c1b3', '#ffb400', '#2ecc71', '#e67e22', '#e84118']
+            }]
+          },
+          options: {
+            responsive: false,
+            cutout: '68%',
+            plugins: { legend: { display: false } }
+          }
+        });
+      } catch (error) {
+        console.error('Chart error:', error);
+      }
+    }
+
+    // Vote function
+    window.voteFor = async function(election_id, cand_id, cand_name) {
+      if (!confirm(`Are you sure you want to vote for "${cand_name}"?\nThis action cannot be undone!`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('https://cybvars-votings-backend.onrender.com/api/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ election_id, candidate_id: cand_id }),
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to submit vote');
+        }
+        
+        if (data.success) {
+          alert('Vote submitted successfully!');
+          await fetchAndRenderElections();
+        } else {
+          throw new Error(data.message || 'Vote submission failed');
+        }
+      } catch (error) {
+        console.error('Voting error:', error);
+        alert(error.message || 'Failed to submit vote. Please try again.');
+      }
+    };
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', async () => {
+      await fetchProfile();
+      await fetchAndRenderElections();
+      
+      // Refresh elections every 30 seconds
+      setInterval(fetchAndRenderElections, 30000);
+    });
+  </script>
+</body>
+</html>

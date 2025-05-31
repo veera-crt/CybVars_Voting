@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Entry | CybVars Voting</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <style>
+    body {
+      background: #f1f8fc;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 0;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .gate-container {
+      background: #fff;
+      padding: 2.7rem 2.1rem 2.1rem 2.1rem;
+      border-radius: 18px;
+      box-shadow: 0 8px 28px rgba(36,123,160,0.14);
+      min-width: 340px;
+      width: 100%;
+      max-width: 350px;
+      text-align: center;
+    }
+    h2 { color: #247ba0; margin-bottom: 1.1rem; }
+    .hidden { display: none !important; }
+    canvas { margin: 0 auto 1.2rem auto; background: #f1f8fc; border-radius: 10px; border: 1px solid #e2e8f0; }
+    .error { color: #e84118; font-size: 1rem; margin: 0.8rem 0 0.3rem 0;}
+    .success { color: #2ecc71; }
+    input[type=password] {
+      width: 92%; padding: 0.7rem; border-radius: 9px; border: 1px solid #eee;
+      margin-bottom: 0.8rem; font-size: 1.1rem;
+    }
+    .btn {
+      background: #247ba0;
+      color: #fff;
+      padding: 0.6rem 1.5rem;
+      border: none;
+      border-radius: 7px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 0.7rem;
+      margin-bottom: 0.5rem;
+      transition: background 0.2s;
+    }
+    .btn:disabled { background: #bbb; cursor: not-allowed;}
+    #strengthBar {
+      height: 8px; width: 92%; background: #eee;
+      border-radius: 5px; margin: 0 auto 0.7rem auto;
+      transition: background 0.3s;
+    }
+    #strengthLabel { font-size: 0.97rem; color: #888;}
+    .admin-link {
+      display: none;
+      margin-top: 2.4rem;
+      color: #247ba0;
+      font-size: 1.08rem;
+      text-decoration: none;
+      border-bottom: 1px dashed #247ba0;
+      padding-bottom: 2px;
+      transition: color 0.2s;
+    }
+    .admin-link:hover { color: #70c1b3;}
+  </style>
+</head>
+<body>
+  <div class="gate-container">
+    <!-- Pattern Lock Step -->
+    <div id="patternStep">
+      <h2>Draw Your Pattern</h2>
+      <canvas id="patternCanvas" width="240" height="240"></canvas>
+      <div id="patternMsg" class="error" style="min-height:28px"></div>
+    </div>
+    <!-- Password Step -->
+    <div id="passwordStep" class="hidden">
+      <h2>Enter Admin Password</h2>
+      <input id="adminPassword" type="password" placeholder="Strong Password"/>
+      <div id="strengthBar"></div>
+      <span id="strengthLabel"></span>
+      <br>
+      <button class="btn" onclick="verifyAdminPassword()" id="unlockBtn" disabled>Unlock Dashboard</button>
+      <div id="pwError" class="error" style="min-height:28px"></div>
+    </div>
+    <!-- Success Link -->
+    <a href="admin-dashboard.html" class="admin-link" id="adminLink"><i class="fas fa-unlock-alt"></i> Enter Admin Dashboard</a>
+  </div>
+  <script>
+    // --- Pattern Lock Logic ---
+    const CORRECT_PATTERN = [1,2,5,8,9]; // Set your pattern (numbers 1-9, L→R, T→B)
+    let inputPattern = [];
+    let drawing = false;
+    const canvas = document.getElementById('patternCanvas');
+    const ctx = canvas.getContext('2d');
+    const R = 32;
+    let dotCenters = [];
+
+    function drawGrid() {
+      ctx.clearRect(0,0,240,240);
+      dotCenters = [];
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+          let x = 50 + col*70, y = 50 + row*70;
+          dotCenters.push({x, y});
+          ctx.beginPath();
+          ctx.arc(x, y, R, 0, 2 * Math.PI);
+          ctx.fillStyle = "#fff";
+          ctx.strokeStyle = "#70c1b3";
+          ctx.lineWidth = 4;
+          ctx.fill(); ctx.stroke();
+        }
+      }
+    }
+    function getDotIndex(x, y) {
+      for (let i = 0; i < dotCenters.length; i++) {
+        const {x:dx, y:dy} = dotCenters[i];
+        if (Math.hypot(dx-x, dy-y) < R+6) return i+1;
+      }
+      return null;
+    }
+    function drawPath() {
+      if (inputPattern.length === 0) return;
+      ctx.beginPath();
+      let first = dotCenters[inputPattern[0]-1];
+      ctx.moveTo(first.x, first.y);
+      for (let i=1;i<inputPattern.length;i++) {
+        let dot = dotCenters[inputPattern[i]-1];
+        ctx.lineTo(dot.x, dot.y);
+      }
+      ctx.strokeStyle = "#247ba0";
+      ctx.lineWidth = 8;
+      ctx.stroke();
+      // draw selected dots
+      for (let idx of inputPattern) {
+        const {x,y} = dotCenters[idx-1];
+        ctx.beginPath();
+        ctx.arc(x, y, R-8, 0, 2*Math.PI);
+        ctx.fillStyle="#247ba0";
+        ctx.fill();
+      }
+    }
+    function redraw() { drawGrid(); drawPath(); }
+    drawGrid();
+
+    function getRelative(e) {
+      let rect = canvas.getBoundingClientRect();
+      if (e.touches && e.touches.length) e = e.touches[0];
+      return {x: e.clientX-rect.left, y: e.clientY-rect.top};
+    }
+    function resetPattern() {
+      inputPattern = [];
+      redraw();
+    }
+
+    canvas.addEventListener('mousedown', e => {
+      drawing = true; inputPattern = [];
+      let {x, y} = getRelative(e);
+      let idx = getDotIndex(x, y);
+      if (idx && !inputPattern.includes(idx)) inputPattern.push(idx);
+      redraw();
+    });
+    canvas.addEventListener('mousemove', e => {
+      if (!drawing) return;
+      let {x, y} = getRelative(e);
+      let idx = getDotIndex(x, y);
+      if (idx && !inputPattern.includes(idx)) {
+        inputPattern.push(idx);
+        redraw();
+      }
+    });
+    window.addEventListener('mouseup', finishPattern);
+    canvas.addEventListener('mouseleave', finishPattern);
+    function finishPattern(e) {
+      if (!drawing) return;
+      drawing = false;
+      // Check pattern
+      if (inputPattern.length < 4) {
+        document.getElementById('patternMsg').textContent = "Pattern too short!";
+        setTimeout(resetPattern, 700);
+        return;
+      }
+      if (inputPattern.join(',') === CORRECT_PATTERN.join(',')) {
+        document.getElementById('patternStep').classList.add('hidden');
+        document.getElementById('passwordStep').classList.remove('hidden');
+        setTimeout(() => document.getElementById('adminPassword').focus(), 100);
+        document.getElementById('patternMsg').textContent = "";
+        resetPattern();
+      } else {
+        document.getElementById('patternMsg').textContent = "Incorrect pattern. Try again!";
+        setTimeout(resetPattern, 900);
+      }
+    }
+    // Support for touch screens
+    canvas.addEventListener('touchstart', e => {
+      drawing = true; inputPattern = [];
+      let {x, y} = getRelative(e);
+      let idx = getDotIndex(x, y);
+      if (idx && !inputPattern.includes(idx)) inputPattern.push(idx);
+      redraw(); e.preventDefault();
+    });
+    canvas.addEventListener('touchmove', e => {
+      if (!drawing) return;
+      let {x, y} = getRelative(e);
+      let idx = getDotIndex(x, y);
+      if (idx && !inputPattern.includes(idx)) {
+        inputPattern.push(idx);
+        redraw();
+      }
+      e.preventDefault();
+    });
+    window.addEventListener('touchend', finishPattern);
+
+    // --- Password Step ---
+    const ADMIN_PASSWORD = "CybVars@2025";
+    const pwInput = document.getElementById('adminPassword');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthLabel = document.getElementById('strengthLabel');
+    const unlockBtn = document.getElementById('unlockBtn');
+    const pwError = document.getElementById('pwError');
+    let strongEnough = false;
+
+    pwInput.addEventListener('input', () => {
+      const pwd = pwInput.value;
+      const {score, label, color} = checkPasswordStrength(pwd);
+      strengthBar.style.background = color;
+      strengthLabel.textContent = label;
+      strongEnough = score >= 3;
+      unlockBtn.disabled = !strongEnough;
+    });
+    function checkPasswordStrength(pwd) {
+      let score = 0;
+      if (pwd.length >= 8) score++;
+      if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+      if (/\d/.test(pwd)) score++;
+      if (/[\W_]/.test(pwd)) score++;
+      let color = "#e84118", label = "Very Weak";
+      if (score === 1) { color="#e67e22"; label="Weak"; }
+      if (score === 2) { color="#ffb400"; label="Fair"; }
+      if (score === 3) { color="#70c1b3"; label="Strong"; }
+      if (score === 4) { color="#2ecc71"; label="Very Strong"; }
+      return {score, label, color};
+    }
+    function verifyAdminPassword() {
+      const input = pwInput.value;
+      if (input === ADMIN_PASSWORD && strongEnough) {
+        pwError.textContent = "";
+        document.getElementById('passwordStep').classList.add('hidden');
+        let link = document.getElementById('adminLink');
+        link.style.display = "inline-block";
+        link.focus();
+      } else {
+        pwError.textContent = "Invalid password! Try again.";
+      }
+    }
+    pwInput.addEventListener('keyup', e => {
+      if (e.key === "Enter" && strongEnough) verifyAdminPassword();
+    });
+  </script>
+</body>
+</html>

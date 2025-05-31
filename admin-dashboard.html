@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | CybVars Voting</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #247ba0;
+      --accent: #70c1b3;
+      --dark: #25303b;
+      --light: #f8fcff;
+      --danger: #e84118;
+      --success: #2ecc71;
+      --warning: #ffb400;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f1f8fc;
+      color: var(--dark);
+    }
+    
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid #d3e6f3;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.5rem;
+      text-decoration: none;
+    }
+    
+    .logo i {
+      color: var(--accent);
+      font-size: 1.8rem;
+    }
+    
+    .logout-btn {
+      background: var(--warning);
+      color: var(--dark);
+      border: none;
+      border-radius: 7px;
+      padding: 0.5rem 1.1rem;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .logout-btn:hover {
+      background: #ffd166;
+    }
+    
+    .admin-title {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 2rem;
+    }
+    
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .dashboard-card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 6px 24px rgba(36, 123, 160, 0.1);
+      padding: 2rem;
+      transition: transform 0.3s, box-shadow 0.3s;
+      text-align: center;
+      cursor: pointer;
+      border-left: 5px solid var(--primary);
+    }
+    
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 28px rgba(36, 123, 160, 0.15);
+    }
+    
+    .card-icon {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+    
+    .card-title {
+      font-size: 1.3rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .card-desc {
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+    
+    .card-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 7px;
+      padding: 0.6rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .card-btn:hover {
+      background: #1b5d75;
+    }
+    
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      .admin-container {
+        padding: 1rem;
+      }
+      
+      .dashboard-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <header>
+      <a href="#" class="logo">
+        <i class="fas fa-vote-yea"></i>
+        <span>CybVars Voting</span>
+      </a>
+      <button class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </header>
+    
+    <h1 class="admin-title">Admin Dashboard</h1>
+    
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-value" id="totalElections">0</div>
+        <div class="stat-label">Total Elections</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="activeElections">0</div>
+        <div class="stat-label">Active Elections</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalVoters">0</div>
+        <div class="stat-label">Registered Voters</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="pendingApprovals">0</div>
+        <div class="stat-label">Pending Approvals</div>
+      </div>
+    </div>
+    
+    <div class="dashboard-cards">
+      <div class="dashboard-card" onclick="navigateTo('elections.html')">
+        <div class="card-icon">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <h2 class="card-title">Election Management</h2>
+        <p class="card-desc">Create, modify, and manage elections. View results and statistics.</p>
+        <button class="card-btn">Manage Elections</button>
+      </div>
+      
+      <div class="dashboard-card" onclick="navigateTo('manager.html')">
+        <div class="card-icon">
+          <i class="fas fa-users-cog"></i>
+        </div>
+        <h2 class="card-title">User Management</h2>
+        <p class="card-desc">Approve new registrations, manage user accounts, and view voter details.</p>
+        <button class="card-btn">Manage Users</button>
+      </div>
+      
+      
+      
+      
+       
+      
+
+  <script>
+    // Navigation function
+    function navigateTo(page) {
+      window.location.href = page;
+    }
+    
+    // Logout function
+    function logout() {
+      fetch('http://127.0.0.1:5000/api/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      .then(response => {
+        window.location.href = 'admin.html';
+      })
+      .catch(error => {
+        console.error('Logout error:', error);
+        window.location.href = 'admin.html';
+      });
+    }
+    
+    // Load admin stats
+    async function loadAdminStats() {
+      try {
+        // Fetch election stats
+        const electionsRes = await fetch('https://cybvars-votings-backend.onrender.com/api/elections');
+        const electionsData = await electionsRes.json();
+        
+        if (electionsData.success) {
+          document.getElementById('totalElections').textContent = electionsData.elections.length;
+          const activeElections = electionsData.elections.filter(e => e.is_active).length;
+          document.getElementById('activeElections').textContent = activeElections;
+        }
+        
+        // Fetch voter stats
+        const votersRes = await fetch('https://cybvars-votings-backend.onrender.com/api/voting-stats');
+        const votersData = await votersRes.json();
+        
+        if (votersData.success) {
+          document.getElementById('totalVoters').textContent = votersData.total_voters;
+        }
+        
+        // Fetch pending approvals
+        const pendingRes = await fetch('https://cybvars-votings-backend.onrender.com/api/manager/pending-users');
+        const pendingData = await pendingRes.json();
+        
+        if (pendingData.success) {
+          document.getElementById('pendingApprovals').textContent = pendingData.users.length;
+        }
+      } catch (error) {
+        console.error('Error loading admin stats:', error);
+      }
+    }
+    
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAdminStats();
+    });
+  </script>
+</body>
+</html>

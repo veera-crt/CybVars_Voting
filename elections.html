@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Election Manager | CybVars Voting System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <style>
+    body { background: #f1f8fc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; }
+    .container { max-width: 1100px; margin: 2.2rem auto; background: #fff; border-radius: 18px; box-shadow: 0 6px 32px rgba(36,123,160,0.13); padding: 2.2rem 1.5rem 1.8rem 1.5rem;}
+    h2 { text-align: center; color: #1d669e; margin-bottom: 1.5rem; }
+    .election-list { width: 100%; border-collapse: collapse; margin-top: 1.3rem;}
+    .election-list th, .election-list td { padding: 1.05rem 0.5rem; }
+    .election-list th { background: #f2f8ff; color: #1d669e; font-size: 1.09rem; border-bottom: 2px solid #cce6fb; }
+    .election-list td { border-bottom: 1px solid #e6f3fb; font-size: 1.05rem; }
+    .election-list tr:hover { background: #f8fcff; }
+    .btn { padding: 0.43rem 1.1rem; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.98rem; transition: background 0.12s;}
+    .btn-add { background: #247ba0; color: #fff;}
+    .btn-add:hover { background: #186faf; }
+    .btn-candidate { background: #6dc2e9; color: #1d669e;}
+    .btn-candidate:hover { background: #1d669e; color: #fff;}
+    .btn-lock { background: #ffb400; color: #1d669e;}
+    .btn-lock:hover { background: #ffd166; color: #22313f;}
+    .btn-reset { background: #e74c3c; color: #fff; }
+    .btn-reset:hover { background: #c0392b; }
+    .btn-mod { background: #2ecc71; color: #fff;}
+    .btn-mod:hover { background: #1b9e52; }
+    .btn-status { background: #70c1b3; color: #fff; }
+    .btn-status.active { background: #2ecc71; }
+    .btn-status.inactive { background: #f65050; }
+    .btn-hide { background: #9b59b6; color: #fff; }
+    .btn-hide:hover { background: #8e44ad; }
+    .back-btn { background: #247ba0; color: #fff; border: none; border-radius: 7px; font-size: 1.09rem; font-weight: bold; padding: 0.5rem 1.1rem; cursor: pointer; margin-bottom: 1.2rem;}
+    .back-btn:hover { background: #70c1b3; }
+    .msg-toast { position: fixed; top: 28px; left: 50%; transform: translateX(-50%); z-index: 99; font-weight: bold; background: #fff; color: #247ba0; border-radius: 30px; box-shadow: 0 6px 22px rgba(36,123,160,0.11); padding: 1rem 2.1rem; display: none; }
+    .msg-toast.success { background: #2ecc71; color: #fff;}
+    .msg-toast.error { background: #e84118; color: #fff;}
+    .add-form { background: #f8fcff; padding: 1.4rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(36,123,160,0.05); margin-bottom: 2.1rem;}
+    .add-form label { color: #247ba0; font-weight: bold; margin-bottom: 0.3rem; display: block;}
+    .add-form input, .add-form textarea { padding: 0.6rem 0.9rem; border: 1px solid #d3e6f3; border-radius: 7px; font-size: 1rem; margin-bottom: 1rem; width: 100%; }
+    .add-form input[type="datetime-local"] { min-width: 220px; }
+    .candidates-list { margin-top: 0.5rem; padding-left: 1.2rem;}
+    .candidates-list li { margin-bottom: 0.28rem; }
+    .candidate-add-row { margin-top: 0.6rem; display: flex; gap: 0.8rem; align-items: center;}
+    .candidate-add-row input { flex: 1; }
+    .hidden-election { opacity: 0.6; background-color: #f9f9f9; }
+    @media (max-width: 800px) {
+      .container { padding: 0.7rem 0.2rem; }
+      .add-form, .election-list th, .election-list td { font-size: 0.97rem;}
+    }
+  </style>
+</head>
+<body>
+  <div class="msg-toast" id="toastMsg"></div>
+  <div class="container">
+    <button class="back-btn" onclick="window.location.href='admin-dashboard.html'"><i class="fas fa-arrow-left"></i> Home</button>
+    <h2>Election Management</h2>
+    <!-- Add New Election -->
+    <form class="add-form" id="addElectionForm">
+      <label for="el_title">Election Title</label>
+      <input type="text" id="el_title" required placeholder="Eg: President Election 2025"/>
+      <label for="el_desc">Description</label>
+      <textarea id="el_desc" rows="2" required placeholder="Short description..."></textarea>
+      <div style="display:flex;gap:1.1rem;">
+        <div style="flex:1">
+          <label for="el_start">Start Time</label>
+          <input type="datetime-local" id="el_start" required />
+        </div>
+        <div style="flex:1">
+          <label for="el_end">End Time</label>
+          <input type="datetime-local" id="el_end" required />
+        </div>
+      </div>
+      <button type="submit" class="btn btn-add" style="margin-top:0.6rem;"><i class="fas fa-plus"></i> Create Election</button>
+    </form>
+    <!-- Election List -->
+    <table class="election-list" id="electionTable">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Status</th>
+          <th>Candidates</th>
+          <th>Visibility</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="electionTableBody">
+        <tr><td colspan="7" style="text-align:center; color:#888;">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <script>
+    // === TOAST MSGS ===
+    function showToast(message, type="success") {
+      const toast = document.getElementById("toastMsg");
+      toast.textContent = message;
+      toast.className = "msg-toast " + type;
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 2200);
+    }
+
+    // === LOAD ELECTIONS ===
+    async function loadElections() {
+      const res = await fetch("https://cybvars-votings-backend.onrender.com/api/elections");
+      const data = await res.json();
+      const body = document.getElementById('electionTableBody');
+      body.innerHTML = "";
+      if(data.success && data.elections.length > 0) {
+        data.elections.forEach(el => {
+          let statusText = el.is_locked ? "Locked" : (el.is_active ? "Active" : "Inactive");
+          let statusClass = el.is_active ? "active" : "inactive";
+          let candidatesHtml = `<ul class="candidates-list">` + (el.candidates || []).map(c => `<li>${c.name} (${c.votes} votes)</li>`).join("") + `</ul>
+            <div class="candidate-add-row">
+              <input type="text" id="add_cand_${el.id}" placeholder="Add candidate name..." />
+              <button class="btn btn-candidate" onclick="addCandidate(${el.id})"><i class="fas fa-plus"></i></button>
+            </div>`;
+          body.innerHTML += `
+            <tr class="${el.is_hidden ? 'hidden-election' : ''}">
+              <td><b>${el.title}</b><br><span style="color:#186faf;font-size:0.97rem;">${el.description}</span></td>
+              <td>${el.start_time.replace("T", " ").slice(0,16)}</td>
+              <td>${el.end_time.replace("T", " ").slice(0,16)}</td>
+              <td>
+                <button class="btn btn-status ${statusClass}" onclick="toggleActive(${el.id},${el.is_active})">
+                  ${statusText}
+                </button>
+                ${el.is_locked ? '<span style="color:#e67e22;font-weight:bold;">🔒</span>' : ""}
+              </td>
+              <td>${candidatesHtml}</td>
+              <td>
+                <button class="btn btn-hide" onclick="toggleHide(${el.id}, ${el.is_hidden})">
+                  ${el.is_hidden ? 'Unhide' : 'Hide'}
+                </button>
+              </td>
+              <td>
+                <button class="btn btn-lock" onclick="lockElection(${el.id}, true)">Lock</button>
+                <button class="btn btn-lock" onclick="lockElection(${el.id}, false)">Unlock</button>
+                <button class="btn btn-mod" onclick="modifyElection(${el.id})">Modify</button>
+                <button class="btn btn-reset" onclick="resetElection(${el.id})">Reset</button>
+              </td>
+            </tr>
+          `;
+        });
+      } else {
+        body.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#888;">No elections found.</td></tr>`;
+      }
+    }
+
+    // === CREATE ELECTION ===
+    document.getElementById("addElectionForm").onsubmit = async function(e) {
+      e.preventDefault();
+      const title = document.getElementById("el_title").value.trim();
+      const desc = document.getElementById("el_desc").value.trim();
+      const start = document.getElementById("el_start").value;
+      const end = document.getElementById("el_end").value;
+      if(!title || !desc || !start || !end) return showToast("Fill all fields!","error");
+      const res = await fetch("https://cybvars-votings-backend.onrender.com/api/elections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description: desc, start_time: start, end_time: end })
+      });
+      const data = await res.json();
+      if(data.success) {
+        showToast("Election created!","success");
+        this.reset();
+        loadElections();
+      } else showToast(data.message || "Error!","error");
+    };
+
+    // === CANDIDATES ===
+    window.addCandidate = async function(election_id) {
+      const input = document.getElementById("add_cand_" + election_id);
+      const name = input.value.trim();
+      if(!name) return showToast("Enter a candidate name!", "error");
+      const res = await fetch(`https://cybvars-votings-backend.onrender.com/api/elections/${election_id}/candidates`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      });
+      const data = await res.json();
+      if(data.success) {
+        showToast("Candidate added!","success");
+        input.value = "";
+        loadElections();
+      } else showToast(data.message || "Error!","error");
+    };
+
+    // === LOCK/UNLOCK ===
+    window.lockElection = async function(election_id, lock=true) {
+      const res = await fetch(`https://cybvars-votings-backend.onrender.com/api/elections/${election_id}/lock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lock })
+      });
+      const data = await res.json();
+      if(data.success) {
+        showToast(lock ? "Election locked!" : "Election unlocked!", "success");
+        loadElections();
+      } else showToast(data.message || "Error!","error");
+    };
+
+    // === HIDE/UNHIDE ===
+    window.toggleHide = async function(election_id, is_hidden) {
+      const res = await fetch(`https://cybvars-votings-backend.onrender.com/api/elections/${election_id}/hide`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hide: !is_hidden })
+      });
+      const data = await res.json();
+      if(data.success) {
+        showToast(!is_hidden ? "Election hidden!" : "Election visible!", "success");
+        loadElections();
+      } else showToast(data.message || "Error!","error");
+    };
+
+    // === ACTIVATE/DEACTIVATE ===
+    window.toggleActive = async function(election_id, is_active) {
+      const res = await fetch(`https://cybvars-votings-backend.onrender.com/api/elections/${election_id}/activate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !is_active })
+      });
+      const data = await res.json();
+      if(data.success) {
+        showToast(!is_active ? "Activated!" : "Deactivated!", "success");
+        loadElections();
+      } else showToast(data.message || "Error!","error");
+    };
+
+    // === RESET ===
+    window.resetElection = async function(election_id) {
+      if(!confirm("Reset will remove all candidates and votes for this election. Continue?")) return;
+      const res = await fetch(`https://cybvars-votings-backend.onrender.com/api/elections/${election_id}/reset`, { method: "POST" });
+      const data = await res.json();
+      if(data.success) {
+        showToast("Election reset!", "success");
+        loadElections();
+      } else showToast(data.message || "Error!","error");
+    };
+
+    // === MODIFY ===
+    window.modifyElection = async function(election_id) {
+      const newStart = prompt("Enter new Start Time (YYYY-MM-DDTHH:MM):");
+      if(!newStart) return;
+      const newEnd = prompt("Enter new End Time (YYYY-MM-DDTHH:MM):");
+      if(!newEnd) return;
+      const res = await fetch(`https://cybvars-votings-backend.onrender.com/api/elections/${election_id}/modify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ start_time: newStart, end_time: newEnd })
+      });
+      const data = await res.json();
+      if(data.success) {
+        showToast("Election time updated!", "success");
+        loadElections();
+      } else showToast(data.message || "Error!","error");
+    };
+
+    window.onload = loadElections;
+  </script>
+</body>
+</html>
