@@ -1,223 +1,747 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Login | CybVars Voting System</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
-  <style>
-    body {
-      background: linear-gradient(135deg, #247ba0 0%, #70c1b3 100%);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    .back-btn {
-      position: absolute;
-      left: 2vw;
-      top: 2vw;
-      background: #fff;
-      color: #247ba0;
-      border: none;
-      border-radius: 50%;
-      width: 40px; height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      box-shadow: 0 2px 8px rgba(36,123,160,0.07);
-      cursor: pointer;
-      transition: background 0.16s, color 0.13s;
-      z-index: 10;
-    }
-    .back-btn:hover {
-      background: #247ba0;
-      color: #fff;
-    }
-    .container {
-      background: #fff;
-      max-width: 420px;
-      margin: 5rem auto 0 auto;
-      border-radius: 18px;
-      box-shadow: 0 4px 24px rgba(36,123,160,0.16);
-      padding: 2.5rem 2rem 2rem 2rem;
-      text-align: center;
-    }
-    .logo {
-      color: #247ba0;
-      font-size: 2.1rem;
-      font-weight: bold;
-      letter-spacing: 1.5px;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-    .logo i { color: #70c1b3; }
-    h2 { color: #22313f; margin-bottom: 1.5rem; }
-    form { display: flex; flex-direction: column; gap: 1.2rem; }
-    .input-group {
-      display: flex; align-items: center;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 0.7rem 0.7rem 0.7rem 0.9rem;
-      background: #f7fafc;
-      position: relative;
-    }
-    .input-group i {
-      margin-right: 0.8rem;
-      color: #70c1b3;
-      font-size: 1.08rem;
-    }
-    .input-group input {
-      border: none;
-      background: transparent;
-      outline: none;
-      width: 100%;
-      font-size: 1.08rem;
-      color: #25303b;
-    }
-    #togglePwd {
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      color: #70c1b3;
-      font-size: 1.13rem;
-    }
-    .btn {
-      background: #247ba0;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 0.85rem 0;
-      font-size: 1.1rem;
-      font-weight: bold;
-      letter-spacing: 1px;
-      cursor: pointer;
-      margin-top: 0.7rem;
-      transition: background 0.17s;
-      box-shadow: 0 2px 8px rgba(36,123,160,0.05);
-    }
-    .btn:hover { background: #70c1b3; }
-    .msg {
-      margin-top: 1rem;
-      font-weight: bold;
-      font-size: 1.05rem;
-      color: #e84118;
-      text-align: center;
-    }
-    .alt-link {
-      margin-top: 1.3rem;
-      color: #247ba0;
-      font-size: 1rem;
-    }
-    .alt-link a {
-      color: #247ba0; font-weight: bold; text-decoration: none;
-      transition: color 0.15s;
-    }
-    .alt-link a:hover { color: #22313f; text-decoration: underline; }
-    @media (max-width: 500px) {
-      .container { margin: 1.2rem 0.2rem; padding: 1.2rem 0.4rem; }
-      .logo { font-size: 1.1rem; }
-      h2 { font-size: 1.1rem; }
-      .btn { font-size: 1rem; }
-      .back-btn { left: 8px; top: 8px; width: 36px; height: 36px; font-size: 1rem; }
-    }
-  </style>
-</head>
-<body>
-  <button class="back-btn" onclick="window.location.href='index.html'">
-    <i class="fas fa-arrow-left"></i>
-  </button>
-  <div class="container">
-    <div class="logo">
-      <i class="fas fa-vote-yea"></i> CybVars Voting
-    </div>
-    <h2>User Login</h2>
-    <form id="loginForm" autocomplete="off">
-      <div class="input-group">
-        <i class="fas fa-envelope"></i>
-        <input type="email" name="email" id="email" placeholder="Email Address" required>
-      </div>
-      <div class="input-group">
-        <i class="fas fa-lock"></i>
-        <input type="password" name="password" id="password" placeholder="Password" required minlength="8" autocomplete="current-password">
-        <span id="togglePwd">
-          <i class="fas fa-eye" id="eyeIcon"></i>
-        </span>
-      </div>
-      <button class="btn" type="submit"><i class="fas fa-sign-in-alt"></i> Login</button>
-    </form>
-    <div class="msg" id="loginMsg"></div>
-    <div class="alt-link">
-      Don't have an account? <a href="register.html">Register</a>
-    </div>
-  </div>
-  <script>
-    document.getElementById('loginForm').onsubmit = async function(e) {
-        e.preventDefault();
-        let form = e.target;
-        let payload = {
-            email: form.email.value.trim(),
-            password: form.password.value.trim()
-        };
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Login | CybVars Voting System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
-        try {
-            let res = await fetch('https://cybvars-votings-backend-123.onrender.com/api/login', {
-                method: 'POST',
-                headers: { 
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-                credentials: 'include'  // Important for sessions/cookies
-            });
-            
-            let data = await res.json();
-            let msgDiv = document.getElementById('loginMsg');
-            
-            if (data.success) {
-                msgDiv.style.color = "#2d8a4f";
-                msgDiv.textContent = "Login successful! Redirecting...";
-                // Store user ID in localStorage if needed
-                if (data.user_id) {
-                    localStorage.setItem('user_id', data.user_id);
-                }
-                setTimeout(() => { 
-                    window.location.href = "user-dashboard.html"; 
-                }, 1300);
-            } else {
-                msgDiv.style.color = "#e84118";
-                msgDiv.textContent = data.message || "Login failed.";
-            }
-        } catch (error) {
-            console.error('Fetch error:', error);
-            document.getElementById('loginMsg').textContent = "Network error. Please try again.";
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray: #64748b;
+            --gray-light: #cbd5e1;
+            --white: #ffffff;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-    }
 
-    // Password show/hide logic
-    const pwdInput = document.getElementById('password');
-    const togglePwd = document.getElementById('togglePwd');
-    const eyeIcon = document.getElementById('eyeIcon');
-    
-    togglePwd.onclick = function() {
-        if (pwdInput.type === "password") {
-            pwdInput.type = "text";
-            eyeIcon.classList.remove("fa-eye");
-            eyeIcon.classList.add("fa-eye-slash");
-        } else {
-            pwdInput.type = "password";
-            eyeIcon.classList.add("fa-eye");
-            eyeIcon.classList.remove("fa-eye-slash");
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    };
-</script>
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 25%, var(--secondary) 50%, var(--accent) 75%, var(--success) 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-15px) rotate(1deg); }
+            66% { transform: translateY(10px) rotate(-1deg); }
+        }
+
+        /* Floating Particles */
+        body::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.2), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.3), transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.2), transparent),
+                radial-gradient(2px 2px at 160px 30px, rgba(255,255,255,0.3), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: sparkle 20s linear infinite;
+        }
+
+        @keyframes sparkle {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-100px); }
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 2rem;
+            top: 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 1000;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .back-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            max-width: 450px;
+            width: 90%;
+            border-radius: 24px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 3rem 2.5rem;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            animation: slideInUp 1s ease-out;
+            overflow: hidden;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .logo {
+            color: var(--primary);
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            animation: fadeInDown 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo i {
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        h2 {
+            color: var(--dark);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            animation: fadeInUp 1s ease-out 0.7s both;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            border: 2px solid rgba(99, 102, 241, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1rem 1.25rem;
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(10px);
+            position: relative;
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .input-group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.05), transparent);
+            transition: left 0.6s;
+        }
+
+        .input-group:focus-within::before {
+            left: 100%;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-group:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .input-group i {
+            margin-right: 1rem;
+            color: var(--primary);
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .input-group:focus-within i {
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .input-group input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            font-size: 1rem;
+            color: var(--dark);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .input-group input::placeholder {
+            color: var(--gray);
+            transition: var(--transition);
+        }
+
+        .input-group:focus-within input::placeholder {
+            color: var(--gray-light);
+            transform: translateX(5px);
+        }
+
+        #togglePwd {
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--primary);
+            font-size: 1.1rem;
+            transition: var(--transition);
+            padding: 0.25rem;
+            border-radius: 4px;
+        }
+
+        #togglePwd:hover {
+            color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary) 100%);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        .msg {
+            margin-top: 1.5rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg.success {
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .msg.error {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .alt-link {
+            margin-top: 2rem;
+            color: var(--gray);
+            font-size: 0.95rem;
+            animation: fadeInUp 1s ease-out 0.9s both;
+        }
+
+        .alt-link a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .alt-link a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.3s ease;
+        }
+
+        .alt-link a:hover::after {
+            width: 100%;
+        }
+
+        .alt-link a:hover {
+            color: var(--accent);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn.loading .loading {
+            display: inline-block;
+        }
+
+        .btn.loading i {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 2rem 1.5rem;
+                max-width: none;
+            }
+
+            .logo {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .btn {
+                font-size: 1rem;
+            }
+
+            .back-btn {
+                left: 1rem;
+                top: 1rem;
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 0.5rem;
+                padding: 1.5rem 1rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+            }
+
+            .input-group {
+                padding: 0.875rem 1rem;
+            }
+
+            .btn {
+                padding: 0.875rem 0;
+                font-size: 0.95rem;
+            }
+
+            .back-btn {
+                left: 0.5rem;
+                top: 0.5rem;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Focus Visible for Accessibility */
+        .btn:focus-visible,
+        .back-btn:focus-visible,
+        #togglePwd:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Smooth Transitions for Form Validation */
+        .input-group.error {
+            border-color: var(--danger);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="back-btn" onclick="window.location.href='index.html'" aria-label="Go back to home">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="container">
+        <div class="logo">
+            <i class="fas fa-vote-yea"></i>
+            CybVars Voting
+        </div>
+
+        <h2>Welcome Back</h2>
+
+        <form id="loginForm" autocomplete="off">
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" id="email" placeholder="Enter your email address" required>
+            </div>
+
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" id="password" placeholder="Enter your password" required minlength="8" autocomplete="current-password">
+                <span id="togglePwd" aria-label="Toggle password visibility">
+                    <i class="fas fa-eye" id="eyeIcon"></i>
+                </span>
+            </div>
+
+            <button class="btn" type="submit">
+                <i class="fas fa-sign-in-alt"></i>
+                <span class="loading"></span>
+                Sign In Securely
+            </button>
+            Forgot Password? <a href="forgot-password.html">Reset Password</a>
+        </form>
+
+        <div class="msg" id="loginMsg"></div>
+
+        <div class="alt-link">
+            Don't have an account? <a href="register.html">Create Account</a>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced form submission with loading states
+        document.getElementById('loginForm').onsubmit = async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = form.querySelector('.btn');
+            const msgDiv = document.getElementById('loginMsg');
+            
+            // Add loading state
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            msgDiv.textContent = '';
+            msgDiv.className = 'msg';
+            
+            const payload = {
+                email: form.email.value.trim(),
+                password: form.password.value.trim()
+            };
+
+            try {
+                const res = await fetch('https://cybvars-votings-backend-123.onrender.com/api/login', {
+                    method: 'POST',
+                    headers: { 
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                // Remove loading state
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+
+                if (data.success) {
+                    msgDiv.className = 'msg success';
+                    msgDiv.textContent = "Login successful! Redirecting to dashboard...";
+                    
+                    // Store user ID if provided
+                    if (data.user_id) {
+                        localStorage.setItem('user_id', data.user_id);
+                    }
+
+                    // Add success animation to form
+                    form.style.transform = 'scale(0.95)';
+                    form.style.opacity = '0.7';
+                    
+                    setTimeout(() => { 
+                        window.location.href = "user-dashboard.html"; 
+                    }, 1500);
+                } else {
+                    msgDiv.className = 'msg error';
+                    msgDiv.textContent = data.message || "Login failed. Please check your credentials.";
+                    
+                    // Add error animation to form
+                    form.classList.add('error');
+                    setTimeout(() => form.classList.remove('error'), 500);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                
+                // Remove loading state
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+                
+                msgDiv.className = 'msg error';
+                msgDiv.textContent = "Network error. Please check your connection and try again.";
+                
+                // Add error animation
+                form.classList.add('error');
+                setTimeout(() => form.classList.remove('error'), 500);
+            }
+        };
+
+        // Enhanced password toggle with smooth transitions
+        const pwdInput = document.getElementById('password');
+        const togglePwd = document.getElementById('togglePwd');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        togglePwd.onclick = function() {
+            const isPassword = pwdInput.type === "password";
+            
+            // Add transition effect
+            eyeIcon.style.transform = 'scale(0.8)';
+            
+            setTimeout(() => {
+                if (isPassword) {
+                    pwdInput.type = "text";
+                    eyeIcon.classList.remove("fa-eye");
+                    eyeIcon.classList.add("fa-eye-slash");
+                } else {
+                    pwdInput.type = "password";
+                    eyeIcon.classList.add("fa-eye");
+                    eyeIcon.classList.remove("fa-eye-slash");
+                }
+                
+                eyeIcon.style.transform = 'scale(1)';
+            }, 150);
+        };
+
+        // Add input validation animations
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('invalid', function() {
+                this.parentElement.classList.add('error');
+                setTimeout(() => {
+                    this.parentElement.classList.remove('error');
+                }, 500);
+            });
+
+            input.addEventListener('input', function() {
+                if (this.validity.valid) {
+                    this.parentElement.classList.remove('error');
+                }
+            });
+        });
+
+        // Add keyboard navigation enhancements
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
+                const form = document.getElementById('loginForm');
+                const submitBtn = form.querySelector('.btn');
+                if (!submitBtn.disabled) {
+                    submitBtn.click();
+                }
+            }
+        });
+
+        // Add page load animation
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
 </body>
 </html>
