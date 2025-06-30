@@ -1,260 +1,933 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Entry | CybVars Voting</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
-  <style>
-    body {
-      background: #f1f8fc;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0; padding: 0;
-      min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .gate-container {
-      background: #fff;
-      padding: 2.7rem 2.1rem 2.1rem 2.1rem;
-      border-radius: 18px;
-      box-shadow: 0 8px 28px rgba(36,123,160,0.14);
-      min-width: 340px;
-      width: 100%;
-      max-width: 350px;
-      text-align: center;
-    }
-    h2 { color: #247ba0; margin-bottom: 1.1rem; }
-    .hidden { display: none !important; }
-    canvas { margin: 0 auto 1.2rem auto; background: #f1f8fc; border-radius: 10px; border: 1px solid #e2e8f0; }
-    .error { color: #e84118; font-size: 1rem; margin: 0.8rem 0 0.3rem 0;}
-    .success { color: #2ecc71; }
-    input[type=password] {
-      width: 92%; padding: 0.7rem; border-radius: 9px; border: 1px solid #eee;
-      margin-bottom: 0.8rem; font-size: 1.1rem;
-    }
-    .btn {
-      background: #247ba0;
-      color: #fff;
-      padding: 0.6rem 1.5rem;
-      border: none;
-      border-radius: 7px;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 0.7rem;
-      margin-bottom: 0.5rem;
-      transition: background 0.2s;
-    }
-    .btn:disabled { background: #bbb; cursor: not-allowed;}
-    #strengthBar {
-      height: 8px; width: 92%; background: #eee;
-      border-radius: 5px; margin: 0 auto 0.7rem auto;
-      transition: background 0.3s;
-    }
-    #strengthLabel { font-size: 0.97rem; color: #888;}
-    .admin-link {
-      display: none;
-      margin-top: 2.4rem;
-      color: #247ba0;
-      font-size: 1.08rem;
-      text-decoration: none;
-      border-bottom: 1px dashed #247ba0;
-      padding-bottom: 2px;
-      transition: color 0.2s;
-    }
-    .admin-link:hover { color: #70c1b3;}
-  </style>
-</head>
-<body>
-  <div class="gate-container">
-    <!-- Pattern Lock Step -->
-    <div id="patternStep">
-      <h2>Draw Your Pattern</h2>
-      <canvas id="patternCanvas" width="240" height="240"></canvas>
-      <div id="patternMsg" class="error" style="min-height:28px"></div>
-    </div>
-    <!-- Password Step -->
-    <div id="passwordStep" class="hidden">
-      <h2>Enter Admin Password</h2>
-      <input id="adminPassword" type="password" placeholder="Strong Password"/>
-      <div id="strengthBar"></div>
-      <span id="strengthLabel"></span>
-      <br>
-      <button class="btn" onclick="verifyAdminPassword()" id="unlockBtn" disabled>Unlock Dashboard</button>
-      <div id="pwError" class="error" style="min-height:28px"></div>
-    </div>
-    <!-- Success Link -->
-    <a href="admin-dashboard.html" class="admin-link" id="adminLink"><i class="fas fa-unlock-alt"></i> Enter Admin Dashboard</a>
-  </div>
-  <script>
-    // --- Pattern Lock Logic ---
-    const CORRECT_PATTERN = [1,2,5,8,9]; // Set your pattern (numbers 1-9, L→R, T→B)
-    let inputPattern = [];
-    let drawing = false;
-    const canvas = document.getElementById('patternCanvas');
-    const ctx = canvas.getContext('2d');
-    const R = 32;
-    let dotCenters = [];
-
-    function drawGrid() {
-      ctx.clearRect(0,0,240,240);
-      dotCenters = [];
-      for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 3; col++) {
-          let x = 50 + col*70, y = 50 + row*70;
-          dotCenters.push({x, y});
-          ctx.beginPath();
-          ctx.arc(x, y, R, 0, 2 * Math.PI);
-          ctx.fillStyle = "#fff";
-          ctx.strokeStyle = "#70c1b3";
-          ctx.lineWidth = 4;
-          ctx.fill(); ctx.stroke();
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin Entry | CybVars Voting</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray: #64748b;
+            --gray-light: #cbd5e1;
+            --white: #ffffff;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-      }
-    }
-    function getDotIndex(x, y) {
-      for (let i = 0; i < dotCenters.length; i++) {
-        const {x:dx, y:dy} = dotCenters[i];
-        if (Math.hypot(dx-x, dy-y) < R+6) return i+1;
-      }
-      return null;
-    }
-    function drawPath() {
-      if (inputPattern.length === 0) return;
-      ctx.beginPath();
-      let first = dotCenters[inputPattern[0]-1];
-      ctx.moveTo(first.x, first.y);
-      for (let i=1;i<inputPattern.length;i++) {
-        let dot = dotCenters[inputPattern[i]-1];
-        ctx.lineTo(dot.x, dot.y);
-      }
-      ctx.strokeStyle = "#247ba0";
-      ctx.lineWidth = 8;
-      ctx.stroke();
-      // draw selected dots
-      for (let idx of inputPattern) {
-        const {x,y} = dotCenters[idx-1];
-        ctx.beginPath();
-        ctx.arc(x, y, R-8, 0, 2*Math.PI);
-        ctx.fillStyle="#247ba0";
-        ctx.fill();
-      }
-    }
-    function redraw() { drawGrid(); drawPath(); }
-    drawGrid();
 
-    function getRelative(e) {
-      let rect = canvas.getBoundingClientRect();
-      if (e.touches && e.touches.length) e = e.touches[0];
-      return {x: e.clientX-rect.left, y: e.clientY-rect.top};
-    }
-    function resetPattern() {
-      inputPattern = [];
-      redraw();
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    canvas.addEventListener('mousedown', e => {
-      drawing = true; inputPattern = [];
-      let {x, y} = getRelative(e);
-      let idx = getDotIndex(x, y);
-      if (idx && !inputPattern.includes(idx)) inputPattern.push(idx);
-      redraw();
-    });
-    canvas.addEventListener('mousemove', e => {
-      if (!drawing) return;
-      let {x, y} = getRelative(e);
-      let idx = getDotIndex(x, y);
-      if (idx && !inputPattern.includes(idx)) {
-        inputPattern.push(idx);
-        redraw();
-      }
-    });
-    window.addEventListener('mouseup', finishPattern);
-    canvas.addEventListener('mouseleave', finishPattern);
-    function finishPattern(e) {
-      if (!drawing) return;
-      drawing = false;
-      // Check pattern
-      if (inputPattern.length < 4) {
-        document.getElementById('patternMsg').textContent = "Pattern too short!";
-        setTimeout(resetPattern, 700);
-        return;
-      }
-      if (inputPattern.join(',') === CORRECT_PATTERN.join(',')) {
-        document.getElementById('patternStep').classList.add('hidden');
-        document.getElementById('passwordStep').classList.remove('hidden');
-        setTimeout(() => document.getElementById('adminPassword').focus(), 100);
-        document.getElementById('patternMsg').textContent = "";
-        resetPattern();
-      } else {
-        document.getElementById('patternMsg').textContent = "Incorrect pattern. Try again!";
-        setTimeout(resetPattern, 900);
-      }
-    }
-    // Support for touch screens
-    canvas.addEventListener('touchstart', e => {
-      drawing = true; inputPattern = [];
-      let {x, y} = getRelative(e);
-      let idx = getDotIndex(x, y);
-      if (idx && !inputPattern.includes(idx)) inputPattern.push(idx);
-      redraw(); e.preventDefault();
-    });
-    canvas.addEventListener('touchmove', e => {
-      if (!drawing) return;
-      let {x, y} = getRelative(e);
-      let idx = getDotIndex(x, y);
-      if (idx && !inputPattern.includes(idx)) {
-        inputPattern.push(idx);
-        redraw();
-      }
-      e.preventDefault();
-    });
-    window.addEventListener('touchend', finishPattern);
+        html {
+            scroll-behavior: smooth;
+        }
 
-    // --- Password Step ---
-    const ADMIN_PASSWORD = "CybVars@2025";
-    const pwInput = document.getElementById('adminPassword');
-    const strengthBar = document.getElementById('strengthBar');
-    const strengthLabel = document.getElementById('strengthLabel');
-    const unlockBtn = document.getElementById('unlockBtn');
-    const pwError = document.getElementById('pwError');
-    let strongEnough = false;
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 25%, var(--secondary) 50%, var(--accent) 75%, var(--success) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-    pwInput.addEventListener('input', () => {
-      const pwd = pwInput.value;
-      const {score, label, color} = checkPasswordStrength(pwd);
-      strengthBar.style.background = color;
-      strengthLabel.textContent = label;
-      strongEnough = score >= 3;
-      unlockBtn.disabled = !strongEnough;
-    });
-    function checkPasswordStrength(pwd) {
-      let score = 0;
-      if (pwd.length >= 8) score++;
-      if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
-      if (/\d/.test(pwd)) score++;
-      if (/[\W_]/.test(pwd)) score++;
-      let color = "#e84118", label = "Very Weak";
-      if (score === 1) { color="#e67e22"; label="Weak"; }
-      if (score === 2) { color="#ffb400"; label="Fair"; }
-      if (score === 3) { color="#70c1b3"; label="Strong"; }
-      if (score === 4) { color="#2ecc71"; label="Very Strong"; }
-      return {score, label, color};
-    }
-    function verifyAdminPassword() {
-      const input = pwInput.value;
-      if (input === ADMIN_PASSWORD && strongEnough) {
-        pwError.textContent = "";
-        document.getElementById('passwordStep').classList.add('hidden');
-        let link = document.getElementById('adminLink');
-        link.style.display = "inline-block";
-        link.focus();
-      } else {
-        pwError.textContent = "Invalid password! Try again.";
-      }
-    }
-    pwInput.addEventListener('keyup', e => {
-      if (e.key === "Enter" && strongEnough) verifyAdminPassword();
-    });
-  </script>
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+            animation: float 10s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-25px) rotate(3deg); }
+            66% { transform: translateY(20px) rotate(-3deg); }
+        }
+
+        /* Security Grid Background */
+        body::after {
+            content: '';
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .gate-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 3rem 2.5rem;
+            border-radius: 24px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 380px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            animation: slideInUp 1s ease-out;
+            overflow: hidden;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .gate-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+            animation: shimmer 4s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            font-weight: 700;
+            animation: fadeInDown 1s ease-out 0.3s both;
+            position: relative;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Pattern Canvas Styling */
+        canvas {
+            margin: 0 auto 1.5rem auto;
+            background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+            border-radius: var(--border-radius);
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            animation: fadeIn 1s ease-out 0.5s both;
+            cursor: crosshair;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        canvas:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        canvas:active {
+            transform: translateY(0);
+        }
+
+        /* Message Styling */
+        .error {
+            color: var(--danger);
+            font-size: 0.95rem;
+            margin: 1rem 0 0.5rem 0;
+            font-weight: 600;
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            padding: 0.5rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .success {
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* Password Input Styling */
+        input[type=password] {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border-radius: var(--border-radius);
+            border: 2px solid rgba(99, 102, 241, 0.1);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(10px);
+            color: var(--dark);
+            outline: none;
+            transition: var(--transition);
+            animation: slideInRight 1s ease-out 0.7s both;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        input[type=password]:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+
+        input[type=password]:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-1px);
+        }
+
+        input[type=password]::placeholder {
+            color: var(--gray);
+            transition: var(--transition);
+        }
+
+        input[type=password]:focus::placeholder {
+            color: var(--gray-light);
+            transform: translateX(5px);
+        }
+
+        /* Button Styling */
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+            animation: slideInUp 1s ease-out 0.9s both;
+            letter-spacing: 0.025em;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary) 100%);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(135deg, var(--gray) 0%, var(--gray-light) 100%);
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.6;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Strength Bar Styling */
+        #strengthBar {
+            height: 8px;
+            width: 100%;
+            background: rgba(203, 213, 225, 0.5);
+            border-radius: 4px;
+            margin: 0 auto 1rem auto;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            animation: slideInLeft 1s ease-out 0.8s both;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        #strengthBar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: strengthShimmer 2s infinite;
+        }
+
+        @keyframes strengthShimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        #strengthLabel {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            animation: fadeIn 1s ease-out 0.8s both;
+        }
+
+        /* Admin Link Styling */
+        .admin-link {
+            display: none;
+            margin-top: 2rem;
+            color: var(--primary);
+            font-size: 1.2rem;
+            text-decoration: none;
+            border: 2px solid var(--primary);
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            background: rgba(99, 102, 241, 0.05);
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .admin-link:hover::before {
+            left: 100%;
+        }
+
+        .admin-link:hover {
+            color: white;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .admin-link i {
+            margin-right: 0.5rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+            60% { transform: translateY(-3px); }
+        }
+
+        /* Security Badge */
+        .security-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(135deg, var(--danger) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            box-shadow: var(--shadow-md);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Step Indicators */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .step {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.2);
+            transition: var(--transition);
+        }
+
+        .step.active {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .step.completed {
+            background: var(--success);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .gate-container {
+                margin: 1rem;
+                padding: 2rem 1.5rem;
+                min-width: auto;
+                max-width: none;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            canvas {
+                width: 200px;
+                height: 200px;
+            }
+
+            input[type=password] {
+                font-size: 1rem;
+                padding: 0.875rem 1rem;
+            }
+
+            .btn {
+                font-size: 1rem;
+                padding: 0.875rem 1.5rem;
+            }
+
+            .admin-link {
+                font-size: 1.1rem;
+                padding: 0.875rem 1.5rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn.loading .loading {
+            display: inline-block;
+        }
+
+        /* Focus Visible for Accessibility */
+        .btn:focus-visible,
+        .admin-link:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Pattern Animation Effects */
+        .pattern-glow {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .pattern-success {
+            border-color: var(--success);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .pattern-error {
+            border-color: var(--danger);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="gate-container">
+        <div class="security-badge">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+
+        <!-- Step Indicators -->
+        <div class="step-indicator">
+            <div class="step active" id="step1"></div>
+            <div class="step" id="step2"></div>
+        </div>
+
+        <!-- Pattern Lock Step -->
+        <div id="patternStep">
+            <h2><i class="fas fa-fingerprint"></i> Draw Your Pattern</h2>
+            <canvas id="patternCanvas" width="240" height="240"></canvas>
+            <div id="patternMsg" class="error" style="min-height:28px"></div>
+        </div>
+
+        <!-- Password Step -->
+        <div id="passwordStep" class="hidden">
+            <h2><i class="fas fa-key"></i> Enter Admin Password</h2>
+            <input id="adminPassword" type="password" placeholder="Enter your secure password"/>
+            <div id="strengthBar"></div>
+            <span id="strengthLabel">Password Strength</span>
+            <br>
+            <button class="btn" onclick="verifyAdminPassword()" id="unlockBtn" disabled>
+                <i class="fas fa-unlock-alt"></i>
+                <span class="loading"></span>
+                Unlock Dashboard
+            </button>
+            <div id="pwError" class="error" style="min-height:28px"></div>
+        </div>
+
+        <!-- Success Link -->
+        <a href="admin-dashboard.html" class="admin-link" id="adminLink">
+            <i class="fas fa-crown"></i> Enter Admin Dashboard
+        </a>
+    </div>
+
+    <script>
+        // --- Pattern Lock Logic (Enhanced) ---
+        const CORRECT_PATTERN = [1,2,5,8,9]; // Set your pattern (numbers 1-9, L→R, T→B)
+        let inputPattern = [];
+        let drawing = false;
+        const canvas = document.getElementById('patternCanvas');
+        const ctx = canvas.getContext('2d');
+        const R = 32;
+        let dotCenters = [];
+
+        function drawGrid() {
+            ctx.clearRect(0,0,240,240);
+            dotCenters = [];
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 3; col++) {
+                    let x = 50 + col*70, y = 50 + row*70;
+                    dotCenters.push({x, y});
+                    ctx.beginPath();
+                    ctx.arc(x, y, R, 0, 2 * Math.PI);
+                    
+                    // Enhanced gradient fill
+                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, R);
+                    gradient.addColorStop(0, '#ffffff');
+                    gradient.addColorStop(1, '#f8fafc');
+                    ctx.fillStyle = gradient;
+                    
+                    ctx.strokeStyle = "#6366f1";
+                    ctx.lineWidth = 3;
+                    ctx.fill(); 
+                    ctx.stroke();
+                    
+                    // Add inner glow
+                    ctx.beginPath();
+                    ctx.arc(x, y, R-8, 0, 2 * Math.PI);
+                    ctx.strokeStyle = "rgba(99, 102, 241, 0.3)";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function getDotIndex(x, y) {
+            for (let i = 0; i < dotCenters.length; i++) {
+                const {x:dx, y:dy} = dotCenters[i];
+                if (Math.hypot(dx-x, dy-y) < R+6) return i+1;
+            }
+            return null;
+        }
+
+        function drawPath() {
+            if (inputPattern.length === 0) return;
+            
+            // Draw connecting lines with gradient
+            ctx.beginPath();
+            let first = dotCenters[inputPattern[0]-1];
+            ctx.moveTo(first.x, first.y);
+            for (let i=1;i<inputPattern.length;i++) {
+                let dot = dotCenters[inputPattern[i]-1];
+                ctx.lineTo(dot.x, dot.y);
+            }
+            
+            // Enhanced line styling
+            const gradient = ctx.createLinearGradient(0, 0, 240, 240);
+            gradient.addColorStop(0, '#6366f1');
+            gradient.addColorStop(1, '#06b6d4');
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 6;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+
+            // Draw selected dots with enhanced styling
+            for (let idx of inputPattern) {
+                const {x,y} = dotCenters[idx-1];
+                
+                // Outer glow
+                ctx.beginPath();
+                ctx.arc(x, y, R+5, 0, 2*Math.PI);
+                ctx.fillStyle = "rgba(99, 102, 241, 0.2)";
+                ctx.fill();
+                
+                // Main dot
+                ctx.beginPath();
+                ctx.arc(x, y, R-8, 0, 2*Math.PI);
+                const dotGradient = ctx.createRadialGradient(x, y, 0, x, y, R-8);
+                dotGradient.addColorStop(0, '#6366f1');
+                dotGradient.addColorStop(1, '#4f46e5');
+                ctx.fillStyle = dotGradient;
+                ctx.fill();
+                
+                // Inner highlight
+                ctx.beginPath();
+                ctx.arc(x-5, y-5, 8, 0, 2*Math.PI);
+                ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+                ctx.fill();
+            }
+        }
+
+        function redraw() { 
+            drawGrid(); 
+            drawPath(); 
+        }
+
+        drawGrid();
+
+        function getRelative(e) {
+            let rect = canvas.getBoundingClientRect();
+            if (e.touches && e.touches.length) e = e.touches[0];
+            return {x: e.clientX-rect.left, y: e.clientY-rect.top};
+        }
+
+        function resetPattern() {
+            inputPattern = [];
+            canvas.classList.remove('pattern-error', 'pattern-success', 'pattern-glow');
+            redraw();
+        }
+
+        // Enhanced canvas event handlers
+        canvas.addEventListener('mousedown', e => {
+            drawing = true; 
+            inputPattern = [];
+            canvas.classList.add('pattern-glow');
+            let {x, y} = getRelative(e);
+            let idx = getDotIndex(x, y);
+            if (idx && !inputPattern.includes(idx)) inputPattern.push(idx);
+            redraw();
+        });
+
+        canvas.addEventListener('mousemove', e => {
+            if (!drawing) return;
+            let {x, y} = getRelative(e);
+            let idx = getDotIndex(x, y);
+            if (idx && !inputPattern.includes(idx)) {
+                inputPattern.push(idx);
+                redraw();
+            }
+        });
+
+        window.addEventListener('mouseup', finishPattern);
+        canvas.addEventListener('mouseleave', finishPattern);
+
+        function finishPattern(e) {
+            if (!drawing) return;
+            drawing = false;
+            canvas.classList.remove('pattern-glow');
+
+            // Check pattern
+            if (inputPattern.length < 4) {
+                document.getElementById('patternMsg').textContent = "Pattern too short! Draw at least 4 dots.";
+                canvas.classList.add('pattern-error');
+                setTimeout(() => {
+                    resetPattern();
+                    document.getElementById('patternMsg').textContent = "";
+                }, 1200);
+                return;
+            }
+
+            if (inputPattern.join(',') === CORRECT_PATTERN.join(',')) {
+                canvas.classList.add('pattern-success');
+                document.getElementById('patternMsg').className = "success";
+                document.getElementById('patternMsg').textContent = "Pattern verified! Proceeding to password...";
+                
+                // Update step indicators
+                document.getElementById('step1').classList.add('completed');
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+                
+                setTimeout(() => {
+                    document.getElementById('patternStep').classList.add('hidden');
+                    document.getElementById('passwordStep').classList.remove('hidden');
+                    document.getElementById('adminPassword').focus();
+                    document.getElementById('patternMsg').textContent = "";
+                    resetPattern();
+                }, 1500);
+            } else {
+                document.getElementById('patternMsg').textContent = "Incorrect pattern. Access denied!";
+                canvas.classList.add('pattern-error');
+                setTimeout(() => {
+                    resetPattern();
+                    document.getElementById('patternMsg').textContent = "";
+                }, 1500);
+            }
+        }
+
+        // Touch support with enhanced feedback
+        canvas.addEventListener('touchstart', e => {
+            drawing = true; 
+            inputPattern = [];
+            canvas.classList.add('pattern-glow');
+            let {x, y} = getRelative(e);
+            let idx = getDotIndex(x, y);
+            if (idx && !inputPattern.includes(idx)) inputPattern.push(idx);
+            redraw(); 
+            e.preventDefault();
+        });
+
+        canvas.addEventListener('touchmove', e => {
+            if (!drawing) return;
+            let {x, y} = getRelative(e);
+            let idx = getDotIndex(x, y);
+            if (idx && !inputPattern.includes(idx)) {
+                inputPattern.push(idx);
+                redraw();
+            }
+            e.preventDefault();
+        });
+
+        window.addEventListener('touchend', finishPattern);
+
+        // --- Enhanced Password Step ---
+        const ADMIN_PASSWORD = "CybVars@2025";
+        const pwInput = document.getElementById('adminPassword');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthLabel = document.getElementById('strengthLabel');
+        const unlockBtn = document.getElementById('unlockBtn');
+        const pwError = document.getElementById('pwError');
+        let strongEnough = false;
+
+        pwInput.addEventListener('input', () => {
+            const pwd = pwInput.value;
+            const {score, label, color} = checkPasswordStrength(pwd);
+            
+            // Enhanced strength bar animation
+            strengthBar.style.background = `linear-gradient(90deg, ${color}, ${color}aa)`;
+            strengthBar.style.transform = `scaleX(${score / 4})`;
+            strengthBar.style.transformOrigin = 'left';
+            
+            strengthLabel.textContent = label;
+            strengthLabel.style.color = color;
+            
+            strongEnough = score >= 3;
+            unlockBtn.disabled = !strongEnough;
+            
+            // Clear previous errors
+            if (pwd.length > 0) {
+                pwError.textContent = "";
+                pwError.className = "error";
+            }
+        });
+
+        function checkPasswordStrength(pwd) {
+            let score = 0;
+            if (pwd.length >= 8) score++;
+            if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+            if (/\d/.test(pwd)) score++;
+            if (/[\W_]/.test(pwd)) score++;
+
+            let color = "#ef4444", label = "Very Weak";
+            if (score === 1) { color="#f59e0b"; label="Weak"; }
+            if (score === 2) { color="#eab308"; label="Fair"; }
+            if (score === 3) { color="#06b6d4"; label="Strong"; }
+            if (score === 4) { color="#10b981"; label="Very Strong"; }
+
+            return {score, label, color};
+        }
+
+        function verifyAdminPassword() {
+            const input = pwInput.value;
+            const btn = unlockBtn;
+            
+            // Add loading state
+            btn.classList.add('loading');
+            btn.disabled = true;
+            pwError.textContent = "";
+            
+            // Simulate verification delay for security
+            setTimeout(() => {
+                if (input === ADMIN_PASSWORD && strongEnough) {
+                    pwError.className = "success";
+                    pwError.textContent = "Access granted! Welcome, Administrator.";
+                    
+                    // Update step indicator
+                    document.getElementById('step2').classList.add('completed');
+                    
+                    setTimeout(() => {
+                        document.getElementById('passwordStep').classList.add('hidden');
+                        let link = document.getElementById('adminLink');
+                        link.style.display = "inline-block";
+                        link.focus();
+                    }, 1500);
+                } else {
+                    pwError.className = "error";
+                    pwError.textContent = "Access denied! Invalid credentials.";
+                    
+                    // Add shake animation to input
+                    pwInput.style.animation = 'shake 0.5s ease-in-out';
+                    setTimeout(() => {
+                        pwInput.style.animation = '';
+                    }, 500);
+                }
+                
+                // Remove loading state
+                btn.classList.remove('loading');
+                btn.disabled = !strongEnough;
+            }, 1500);
+        }
+
+        pwInput.addEventListener('keyup', e => {
+            if (e.key === "Enter" && strongEnough) verifyAdminPassword();
+        });
+
+        // Add page load animation
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+
+        // Add security warning after 30 seconds of inactivity
+        let inactivityTimer;
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                if (!document.getElementById('adminLink').style.display) {
+                    alert('Security Notice: Session will expire due to inactivity.');
+                }
+            }, 30000);
+        }
+
+        document.addEventListener('mousemove', resetInactivityTimer);
+        document.addEventListener('keypress', resetInactivityTimer);
+        resetInactivityTimer();
+    </script>
 </body>
 </html>
