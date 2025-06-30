@@ -275,7 +275,7 @@
     // Logout function
     async function logout() {
       try {
-        const response = await fetch('https://cybvars-votings-backend.onrender.com/api/logout', {
+        const response = await fetch('https://cybvars-votings-backend-123.onrender.com/api/logout', {
           method: 'POST',
           credentials: 'include'
         });
@@ -289,7 +289,7 @@
     // Fetch user profile
     async function fetchProfile() {
       try {
-        const response = await fetch("https://cybvars-votings-backend.onrender.com/api/profile", {
+        const response = await fetch("https://cybvars-votings-backend-123.onrender.com/api/profile", {
           credentials: 'include'
         });
         
@@ -324,7 +324,7 @@
     // Fetch and render elections
     async function fetchAndRenderElections() {
       try {
-        const response = await fetch("https://cybvars-votings-backend.onrender.com/api/user/elections", {
+        const response = await fetch("https://cybvars-votings-backend-123.onrender.com/api/user/elections", {
           credentials: 'include'
         });
         
@@ -496,7 +496,7 @@
       }
       
       try {
-        const response = await fetch('https://cybvars-votings-backend.onrender.com/api/vote', {
+        const response = await fetch('https://cybvars-votings-backend-123.onrender.com/api/vote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ election_id, candidate_id: cand_id }),
